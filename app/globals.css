@@ -1,0 +1,257 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #d6eef8;
+  --foreground: #1a3550;
+  --card: rgba(255, 255, 255, 0.55);
+  --card-foreground: #1a3550;
+  --popover: rgba(255, 255, 255, 0.92);
+  --popover-foreground: #1a3550;
+  --primary: #0091d5;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(255, 255, 255, 0.45);
+  --secondary-foreground: #1a5276;
+  --muted: rgba(220, 238, 255, 0.6);
+  --muted-foreground: #6a8caa;
+  --accent: #00b8e6;
+  --accent-foreground: #ffffff;
+  --destructive: #e74c3c;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.7);
+  --input: rgba(255, 255, 255, 0.8);
+  --ring: #0091d5;
+  --radius: 1rem;
+
+  /* Skin variables (overridden by JS ThemeProvider) */
+  --skin-gradient-start: #4FC3F7;
+  --skin-gradient-end: #0288D1;
+  --skin-gradient-deep: #0277BD;
+  --skin-bar: #0288D1;
+  --skin-bar-mid: #29B6F6;
+  --skin-bar-light: #81D4FA;
+  --skin-text: #0277BD;
+  --skin-glow: rgba(2,136,209,0.3);
+  --skin-subtle: rgba(2,136,209,0.12);
+  --skin-border: rgba(2,136,209,0.4);
+  --skin-title-start: rgba(150,210,255,0.85);
+  --skin-title-mid: rgba(80,170,240,0.75);
+  --skin-title-end: rgba(160,215,255,0.8);
+}
+
+@theme inline {
+  --font-sans: 'Segoe UI', 'Geist', sans-serif;
+  --font-mono: 'Share Tech Mono', 'Geist Mono', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius));
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+}
+
+/* Glass panel - frosted white Aero glass with gloss stripe */
+.glass-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.52) 100%);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.92);
+  border-top: 2px solid rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 8px 32px rgba(0, 100, 180, 0.12),
+    0 2px 8px rgba(0, 80, 160, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(200, 230, 255, 0.2);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Aero gloss highlight stripe across top of every glass panel */
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 60%, transparent 100%);
+  border-radius: 16px 16px 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Water droplets scattered on glass panels */
+.glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    radial-gradient(ellipse 3px 4px at 12% 18%, rgba(255,255,255,0.85) 0%, rgba(200,230,255,0.3) 40%, transparent 70%),
+    radial-gradient(ellipse 2px 3px at 28% 8%, rgba(255,255,255,0.8) 0%, rgba(200,230,255,0.25) 40%, transparent 70%),
+    radial-gradient(ellipse 4px 5px at 78% 22%, rgba(255,255,255,0.9) 0%, rgba(200,230,255,0.35) 40%, transparent 70%),
+    radial-gradient(ellipse 2.5px 3.5px at 55% 12%, rgba(255,255,255,0.75) 0%, rgba(200,230,255,0.2) 40%, transparent 70%),
+    radial-gradient(ellipse 3px 4px at 91% 15%, rgba(255,255,255,0.82) 0%, rgba(200,230,255,0.28) 40%, transparent 70%),
+    radial-gradient(ellipse 2px 2.5px at 42% 25%, rgba(255,255,255,0.7) 0%, rgba(200,230,255,0.2) 40%, transparent 70%),
+    radial-gradient(ellipse 3.5px 5px at 68% 6%, rgba(255,255,255,0.88) 0%, rgba(200,230,255,0.3) 40%, transparent 70%),
+    radial-gradient(ellipse 2px 3px at 85% 30%, rgba(255,255,255,0.72) 0%, rgba(200,230,255,0.22) 40%, transparent 70%);
+  background-repeat: no-repeat;
+}
+
+/* Glossy chrome Aero button with gloss stripe */
+.chrome-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #f4faff 20%, #e4f0fa 50%, #d0e5f5 75%, #c0dcee 100%);
+  border: 1px solid rgba(0, 100, 180, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 1px 4px rgba(0, 80, 140, 0.12),
+    0 2px 8px rgba(0, 80, 140, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 12px 16px -8px rgba(255, 255, 255, 0.6);
+  color: #1a3550;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+  border-radius: 12px;
+}
+.chrome-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcff 20%, #e8f4fd 50%, #d8ecf8 75%, #c8e2f2 100%);
+  box-shadow:
+    0 2px 12px rgba(0, 145, 213, 0.22),
+    0 4px 16px rgba(0, 100, 180, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 12px 16px -8px rgba(255, 255, 255, 0.65);
+}
+.chrome-btn:active {
+  background: linear-gradient(180deg, #cce4f4 0%, #b8d8ee 50%, #d4e9f6 100%);
+  box-shadow: inset 0 2px 6px rgba(0, 60, 120, 0.12);
+  transform: translateY(1px);
+}
+
+/* Inset/recessed area with subtle inner glow */
+.inset-panel {
+  background: linear-gradient(180deg, rgba(210, 235, 255, 0.4) 0%, rgba(230, 245, 255, 0.25) 50%, rgba(240, 250, 255, 0.3) 100%);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 80, 140, 0.08),
+    inset 0 0 2px rgba(0, 60, 120, 0.04),
+    inset 0 -8px 16px -8px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+}
+
+/* Blue glow for counters */
+.lcd-glow {
+  text-shadow: 0 0 12px rgba(0, 145, 213, 0.35), 0 0 30px rgba(0, 184, 230, 0.12);
+}
+
+/* Animations */
+@keyframes eq-bounce {
+  0%, 100% { height: var(--eq-min, 15%); }
+  50% { height: var(--eq-max, 85%); }
+}
+@keyframes eq-idle {
+  0%, 100% { height: var(--eq-idle-min, 8%); }
+  50% { height: var(--eq-idle-max, 20%); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Floating bubble animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  8% { opacity: 0.9; }
+  85% { opacity: 0.7; }
+  100% {
+    transform: translateY(-105vh) translateX(var(--drift, 30px)) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Hot air balloon float */
+@keyframes float-balloon {
+  0%, 100% { transform: translateY(0); }
+  33% { transform: translateY(-14px); }
+  66% { transform: translateY(8px); }
+}
+
+/* Cloud drift */
+@keyframes drift-right {
+  0% { transform: translateX(-300px); }
+  100% { transform: translateX(calc(100vw + 100px)); }
+}
+
+/* Fish swim */
+@keyframes swim-right {
+  0% { transform: translateX(-80px) translateY(0); }
+  25% { transform: translateX(25vw) translateY(-12px); }
+  50% { transform: translateX(50vw) translateY(6px); }
+  75% { transform: translateX(75vw) translateY(-8px); }
+  100% { transform: translateX(calc(100vw + 80px)) translateY(0); }
+}
+@keyframes swim-left {
+  0% { transform: translateX(calc(100vw + 80px)) scaleX(-1) translateY(0); }
+  25% { transform: translateX(75vw) scaleX(-1) translateY(8px); }
+  50% { transform: translateX(50vw) scaleX(-1) translateY(-10px); }
+  75% { transform: translateX(25vw) scaleX(-1) translateY(6px); }
+  100% { transform: translateX(-80px) scaleX(-1) translateY(0); }
+}
+
+/* Water shimmer */
+@keyframes water-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Rhythmic wave motion */
+@keyframes wave-shift {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-30px); }
+  100% { transform: translateX(0); }
+}
+
+/* Caustic light ripple */
+@keyframes caustic {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.04; }
+  50% { opacity: 0.08; }
+  100% { transform: translateX(-50px) translateY(-30px) rotate(15deg); opacity: 0.04; }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply text-foreground;
+  }
+}
