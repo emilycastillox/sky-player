@@ -9,8 +9,10 @@ interface MediaPanelProps {
   onYoutubeLoad: (url: string) => void
 }
 
-function extractSpotifyId(url: string) {
-  const match = url.match(/(?:playlist|track|album)\/([a-zA-Z0-9]+)/)
+/** Returns path like "playlist/ID" or "track/ID" for embed URL */
+function extractSpotifyEmbedPath(url: string) {
+  const trimmed = url.trim()
+  const match = trimmed.match(/(?:playlist|track|album)\/([a-zA-Z0-9]+)/)
   return match ? match[0] : null
 }
 
@@ -39,9 +41,16 @@ function MediaSlot({
       <span className="text-[9px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#90A4AE" }}>
         {label}
       </span>
-      {url ? (
-        <div className="rounded-2xl overflow-hidden inset-panel w-full" style={{ height: embedHeight }}>
+      {url && url.trim() ? (
+        <div className="rounded-2xl overflow-hidden inset-panel w-full relative group" style={{ height: embedHeight }}>
           {renderEmbed(url)}
+          <button
+            type="button"
+            onClick={() => onLoad("")}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity chrome-btn text-[9px] uppercase px-2 py-1 rounded-lg"
+          >
+            Clear
+          </button>
         </div>
       ) : (
         <div
@@ -115,8 +124,8 @@ export function MediaPanel({ spotifyUrl, youtubeUrl, onSpotifyLoad, onYoutubeLoa
           onLoad={onSpotifyLoad}
           embedHeight={152}
           renderEmbed={(url) => {
-            const path = extractSpotifyId(url)
-            if (!path) return <span className="text-xs p-3" style={{ color: "#E53935" }}>Invalid URL</span>
+            const path = extractSpotifyEmbedPath(url)
+            if (!path) return <span className="text-xs p-3" style={{ color: "#E53935" }}>Invalid URL — use a Spotify playlist, track, or album link</span>
             return (
               <iframe
                 src={`https://open.spotify.com/embed/${path}?theme=0`}

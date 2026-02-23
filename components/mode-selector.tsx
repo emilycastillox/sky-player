@@ -3,7 +3,6 @@
 interface ModeSelectorProps {
   mode: "focus" | "break"
   onModeChange: (mode: "focus" | "break") => void
-  streakDays: number
   todayFocusMinutes: number
   currentSession: number
   totalSessions: number
@@ -12,7 +11,6 @@ interface ModeSelectorProps {
 export function ModeSelector({
   mode,
   onModeChange,
-  streakDays,
   todayFocusMinutes,
   currentSession,
   totalSessions,
@@ -65,17 +63,9 @@ export function ModeSelector({
       <div className="flex flex-col gap-3">
         <div>
           <span className="text-[9px] uppercase tracking-[0.2em] block font-semibold" style={{ color: "#90A4AE" }}>
-            Streak
+            Total today
           </span>
           <span className="text-sm font-bold lcd-glow" style={{ color: "var(--skin-bar)" }}>
-            {streakDays} days
-          </span>
-        </div>
-        <div>
-          <span className="text-[9px] uppercase tracking-[0.2em] block font-semibold" style={{ color: "#90A4AE" }}>
-            Today
-          </span>
-          <span className="text-sm font-semibold" style={{ color: "#37474F" }}>
             {timeStr}
           </span>
         </div>

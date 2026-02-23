@@ -1,34 +1,85 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Settings, BarChart3 } from "lucide-react"
 import { TitleBar } from "@/components/title-bar"
 import { ModeSelector } from "@/components/mode-selector"
 import { EqualizerVisualizer } from "@/components/equalizer-visualizer"
 import { TimerDisplay } from "@/components/timer-display"
-import { SessionLogPanel, type Session } from "@/components/session-log-panel"
+import { SessionLogPanel } from "@/components/session-log-panel"
 import { TransportBar } from "@/components/transport-bar"
 import { MediaPanel } from "@/components/media-panel"
 import { useTimer } from "@/hooks/use-timer"
-
-const MOCK_SESSIONS: Session[] = [
-  { id: "1", type: "focus", durationMs: 1500000, completedAt: new Date(Date.now() - 120000).toISOString(), wasCompleted: true },
-  { id: "2", type: "break", durationMs: 300000, completedAt: new Date(Date.now() - 600000).toISOString(), wasCompleted: true },
-  { id: "3", type: "focus", durationMs: 1500000, completedAt: new Date(Date.now() - 3600000).toISOString(), wasCompleted: true },
-  { id: "4", type: "focus", durationMs: 1500000, completedAt: new Date(Date.now() - 7200000).toISOString(), wasCompleted: false },
-]
+import { useSettings } from "@/components/settings-provider"
+import { useSessions } from "@/hooks/use-sessions"
 
 export default function PlayerPage() {
+  const settings = useSettings()
+  const { sessions, addSession, todayFocusMinutes, focusSessionsCompletedToday } = useSessions()
   const [mode, setMode] = useState<"focus" | "break">("focus")
-  const [spotifyUrl, setSpotifyUrl] = useState<string | null>(null)
-  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null)
+  const totalSessions = settings.sessionsBeforeLongBreak
+  const currentSession = totalSessions > 0 ? (focusSessionsCompletedToday % totalSessions) + 1 : 1
+  const isLongBreak =
+    mode === "break" &&
+    totalSessions > 0 &&
+    currentSession > 0 &&
+    currentSession % settings.sessionsBeforeLongBreak === 0
 
-  const durationSec = mode === "focus" ? 25 * 60 : 5 * 60
-  const timer = useTimer(durationSec)
+  const durationSec = useMemo(() => {
+    if (mode === "focus") return settings.focusDurationMinutes * 60
+    return (isLongBreak ? settings.longBreakMinutes : settings.shortBreakMinutes) * 60
+  }, [mode, isLongBreak, settings.focusDurationMinutes, settings.shortBreakMinutes, settings.longBreakMinutes])
 
-  const currentSession = 3
-  const totalSessions = 4
+  const autoStartBreakRef = useRef(false)
+
+  const handleComplete = useCallback(() => {
+    addSession({
+      type: mode,
+      durationMs: durationSec * 1000,
+      completedAt: new Date().toISOString(),
+      wasCompleted: true,
+    })
+    if (mode === "focus" && settings.autoStartBreaks) {
+      autoStartBreakRef.current = true
+      setMode("break")
+    }
+  }, [addSession, mode, durationSec, settings.autoStartBreaks])
+
+  const timer = useTimer(durationSec, handleComplete)
+
+  useEffect(() => {
+    if (mode === "break" && autoStartBreakRef.current) {
+      autoStartBreakRef.current = false
+      timer.start()
+    }
+  }, [mode, timer])
+
+  const handleSkip = useCallback(() => {
+    if (timer.status === "running" || timer.status === "paused") {
+      const elapsedMs = (durationSec - timer.remaining) * 1000
+      if (elapsedMs > 0) {
+        addSession({
+          type: mode,
+          durationMs: elapsedMs,
+          completedAt: new Date().toISOString(),
+          wasCompleted: false,
+        })
+      }
+    }
+    timer.reset()
+  }, [timer, mode, durationSec])
+
+  const spotifyUrl = settings.spotifyUrl || null
+  const youtubeUrl = settings.youtubeUrl || null
+  const setSpotifyUrl = useCallback(
+    (url: string) => settings.updateSettings({ spotifyUrl: url }),
+    [settings]
+  )
+  const setYoutubeUrl = useCallback(
+    (url: string) => settings.updateSettings({ youtubeUrl: url }),
+    [settings]
+  )
 
   const handleModeChange = useCallback((newMode: "focus" | "break") => {
     setMode(newMode)
@@ -48,7 +99,7 @@ export default function PlayerPage() {
       <div className="w-full max-w-[1280px] flex flex-col gap-0">
         {/* Title Bar */}
         <div className="relative">
-          <TitleBar title="MEDIA PLAYER v1.0" />
+          <TitleBar title="SKY PLAYER v1.0" />
           <div className="absolute right-20 top-1/2 -translate-y-1/2 flex gap-2">
             <Link href="/stats" className="chrome-btn flex items-center justify-center w-8 h-8 rounded-xl" aria-label="Stats">
               <BarChart3 className="w-4 h-4" />
@@ -66,8 +117,7 @@ export default function PlayerPage() {
             <ModeSelector
               mode={mode}
               onModeChange={handleModeChange}
-              streakDays={5}
-              todayFocusMinutes={165}
+              todayFocusMinutes={todayFocusMinutes}
               currentSession={currentSession}
               totalSessions={totalSessions}
             />
@@ -89,7 +139,10 @@ export default function PlayerPage() {
 
           {/* Right Panel */}
           <div className="w-[230px] shrink-0">
-            <SessionLogPanel sessions={MOCK_SESSIONS} todayFocusMinutes={165} streakDays={5} />
+            <SessionLogPanel
+            sessions={[...sessions].reverse()}
+            todayFocusMinutes={todayFocusMinutes}
+          />
           </div>
         </div>
 
@@ -104,7 +157,7 @@ export default function PlayerPage() {
             onPlay={timer.start}
             onPause={timer.pause}
             onReset={timer.reset}
-            onSkip={timer.reset}
+            onSkip={handleSkip}
           />
         </div>
 

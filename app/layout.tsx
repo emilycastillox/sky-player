@@ -3,6 +3,7 @@ import { Share_Tech_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AeroBackground } from '@/components/aero-background'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SettingsProvider } from '@/components/settings-provider'
 import './globals.css'
 
 const shareTechMono = Share_Tech_Mono({
@@ -12,8 +13,8 @@ const shareTechMono = Share_Tech_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'MEDIA PLAYER v1.0',
-  description: 'A productivity timer inspired by Windows Media Player and Frutiger Aero design',
+  title: 'SKY PLAYER v1.0',
+  description: 'A productivity timer inspired by vintage media player skins and Frutiger Aero design',
 }
 
 export const viewport: Viewport = {
@@ -29,8 +30,10 @@ export default function RootLayout({
     <html lang="en" className={shareTechMono.variable}>
       <body className="font-sans antialiased min-h-screen overflow-x-hidden">
         <ThemeProvider>
-          <AeroBackground />
-          {children}
+          <SettingsProvider>
+            <AeroBackground />
+            {children}
+          </SettingsProvider>
         </ThemeProvider>
         <Analytics />
       </body>

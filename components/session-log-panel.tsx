@@ -1,17 +1,12 @@
 "use client"
 
-export interface Session {
-  id: string
-  type: "focus" | "break"
-  durationMs: number
-  completedAt: string
-  wasCompleted: boolean
-}
+import type { Session } from "@/lib/sessions"
+
+export type { Session }
 
 interface SessionLogPanelProps {
   sessions: Session[]
   todayFocusMinutes: number
-  streakDays: number
 }
 
 function formatDuration(ms: number) {
@@ -31,7 +26,7 @@ function relativeTime(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-export function SessionLogPanel({ sessions, todayFocusMinutes, streakDays }: SessionLogPanelProps) {
+export function SessionLogPanel({ sessions, todayFocusMinutes }: SessionLogPanelProps) {
   const hours = Math.floor(todayFocusMinutes / 60)
   const mins = todayFocusMinutes % 60
   const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
@@ -93,17 +88,11 @@ export function SessionLogPanel({ sessions, todayFocusMinutes, streakDays }: Ses
 
       {/* Footer */}
       <div
-        className="px-4 py-3 flex justify-between text-[10px] uppercase tracking-wider"
+        className="px-4 py-3 text-[10px] uppercase tracking-wider"
         style={{ borderTop: "1px solid rgba(255,255,255,0.5)" }}
       >
-        <div>
-          <span className="block font-semibold" style={{ color: "#90A4AE" }}>Today</span>
-          <span className="font-bold" style={{ color: "var(--skin-bar)" }}>{timeStr}</span>
-        </div>
-        <div className="text-right">
-          <span className="block font-semibold" style={{ color: "#90A4AE" }}>Streak</span>
-          <span className="font-bold" style={{ color: "var(--skin-bar)" }}>{streakDays} days</span>
-        </div>
+        <span className="block font-semibold" style={{ color: "#90A4AE" }}>Total today</span>
+        <span className="font-bold" style={{ color: "var(--skin-bar)" }}>{timeStr}</span>
       </div>
     </div>
   )

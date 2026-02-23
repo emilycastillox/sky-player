@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { TitleBar } from "@/components/title-bar"
 import { useTheme, SKINS, type SkinId } from "@/components/theme-provider"
+import { useSettings } from "@/components/settings-provider"
 
 function SliderControl({ label, min, max, value, onChange, unit = "min" }: {
   label: string; min: number; max: number; value: number; onChange: (v: number) => void; unit?: string
@@ -87,19 +88,21 @@ function ToggleSwitch({ label, checked, onChange }: {
 
 export default function SettingsPage() {
   const { skin, setSkin } = useTheme()
-  const [focusDuration, setFocusDuration] = useState(25)
-  const [shortBreak, setShortBreak] = useState(5)
-  const [longBreak, setLongBreak] = useState(15)
-  const [sessionsBeforeLong, setSessionsBeforeLong] = useState(4)
-  const [autoStartBreaks, setAutoStartBreaks] = useState(false)
-  const [audioChime, setAudioChime] = useState(true)
-  const [spotifyLink, setSpotifyLink] = useState("")
-  const [youtubeLink, setYoutubeLink] = useState("")
+  const settings = useSettings()
+  const [savedToast, setSavedToast] = useState(false)
+
+  // Local state for media links so user can edit before saving
+  const [spotifyLink, setSpotifyLink] = useState(settings.spotifyUrl)
+  const [youtubeLink, setYoutubeLink] = useState(settings.youtubeUrl)
+  useEffect(() => {
+    setSpotifyLink(settings.spotifyUrl)
+    setYoutubeLink(settings.youtubeUrl)
+  }, [settings.spotifyUrl, settings.youtubeUrl])
 
   return (
     <main className="relative min-h-screen flex flex-col items-center p-4 lg:p-8">
       <div className="w-full max-w-[800px] flex flex-col gap-3">
-        <TitleBar title="MEDIA PLAYER -- SETTINGS" backHref="/" />
+        <TitleBar title="SKY PLAYER -- SETTINGS" backHref="/" />
 
         {/* Timer Settings */}
         <div className="glass-panel p-6 mt-1">
@@ -107,9 +110,9 @@ export default function SettingsPage() {
             Timer Settings
           </h2>
           <div className="flex flex-col gap-5">
-            <SliderControl label="Focus Duration" min={1} max={90} value={focusDuration} onChange={setFocusDuration} />
-            <SliderControl label="Short Break" min={1} max={30} value={shortBreak} onChange={setShortBreak} />
-            <SliderControl label="Long Break" min={1} max={60} value={longBreak} onChange={setLongBreak} />
+            <SliderControl label="Focus Duration" min={1} max={90} value={settings.focusDurationMinutes} onChange={(v) => settings.updateSettings({ focusDurationMinutes: v })} />
+            <SliderControl label="Short Break" min={1} max={30} value={settings.shortBreakMinutes} onChange={(v) => settings.updateSettings({ shortBreakMinutes: v })} />
+            <SliderControl label="Long Break" min={1} max={60} value={settings.longBreakMinutes} onChange={(v) => settings.updateSettings({ longBreakMinutes: v })} />
 
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#90A4AE" }}>
@@ -117,16 +120,16 @@ export default function SettingsPage() {
               </span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setSessionsBeforeLong(Math.max(1, sessionsBeforeLong - 1))}
+                  onClick={() => settings.updateSettings({ sessionsBeforeLongBreak: Math.max(1, settings.sessionsBeforeLongBreak - 1) })}
                   className="chrome-btn w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold"
                 >
                   -
                 </button>
                 <span className="text-sm font-bold w-8 text-center" style={{ color: "#37474F" }}>
-                  {sessionsBeforeLong}
+                  {settings.sessionsBeforeLongBreak}
                 </span>
                 <button
-                  onClick={() => setSessionsBeforeLong(Math.min(10, sessionsBeforeLong + 1))}
+                  onClick={() => settings.updateSettings({ sessionsBeforeLongBreak: Math.min(10, settings.sessionsBeforeLongBreak + 1) })}
                   className="chrome-btn w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold"
                 >
                   +
@@ -136,8 +139,8 @@ export default function SettingsPage() {
             </div>
 
             <div className="pt-3 flex flex-col gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.5)" }}>
-              <ToggleSwitch label="Auto-start breaks" checked={autoStartBreaks} onChange={setAutoStartBreaks} />
-              <ToggleSwitch label="Audio chime on complete" checked={audioChime} onChange={setAudioChime} />
+              <ToggleSwitch label="Auto-start breaks" checked={settings.autoStartBreaks} onChange={(v) => settings.updateSettings({ autoStartBreaks: v })} />
+              <ToggleSwitch label="Audio chime on complete" checked={settings.audioChimeOnComplete} onChange={(v) => settings.updateSettings({ audioChimeOnComplete: v })} />
             </div>
           </div>
         </div>
@@ -149,8 +152,18 @@ export default function SettingsPage() {
           </h2>
           <div className="flex flex-col gap-4">
             {[
-              { label: "Spotify Playlist / Track URL", value: spotifyLink, onChange: setSpotifyLink },
-              { label: "YouTube URL", value: youtubeLink, onChange: setYoutubeLink },
+              {
+                label: "Spotify Playlist / Track URL",
+                value: spotifyLink,
+                onChange: setSpotifyLink,
+                onSave: () => settings.updateSettings({ spotifyUrl: spotifyLink }),
+              },
+              {
+                label: "YouTube URL",
+                value: youtubeLink,
+                onChange: setYoutubeLink,
+                onSave: () => settings.updateSettings({ youtubeUrl: youtubeLink }),
+              },
             ].map((field) => (
               <div key={field.label}>
                 <label className="text-[10px] uppercase tracking-[0.15em] block mb-2 font-semibold" style={{ color: "#90A4AE" }}>
@@ -170,7 +183,11 @@ export default function SettingsPage() {
                       color: "#37474F",
                     }}
                   />
-                  <button className="chrome-btn text-[10px] uppercase px-5 py-2.5 rounded-xl font-semibold">
+                  <button
+                    type="button"
+                    onClick={field.onSave}
+                    className="chrome-btn text-[10px] uppercase px-5 py-2.5 rounded-xl font-semibold"
+                  >
                     Save
                   </button>
                 </div>
@@ -224,7 +241,13 @@ export default function SettingsPage() {
 
         {/* Save Button */}
         <button
-          className="w-full py-3.5 rounded-2xl text-sm uppercase tracking-wider font-bold transition-all mb-6"
+          type="button"
+          onClick={() => {
+            settings.updateSettings({ spotifyUrl: spotifyLink, youtubeUrl: youtubeLink })
+            setSavedToast(true)
+            setTimeout(() => setSavedToast(false), 2000)
+          }}
+          className="w-full py-3.5 rounded-2xl text-sm uppercase tracking-wider font-bold transition-all mb-6 relative"
           style={{
             background: "linear-gradient(180deg, var(--skin-gradient-start) 0%, var(--skin-gradient-end) 45%, var(--skin-gradient-deep) 100%)",
             border: "2px solid rgba(255,255,255,0.6)",
@@ -233,7 +256,7 @@ export default function SettingsPage() {
             textShadow: "0 1px 2px rgba(0,0,0,0.15)",
           }}
         >
-          Save Settings
+          {savedToast ? "Saved!" : "Save Settings"}
         </button>
       </div>
     </main>

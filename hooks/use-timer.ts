@@ -4,10 +4,12 @@ import { useState, useRef, useCallback, useEffect } from "react"
 
 type TimerStatus = "idle" | "running" | "paused" | "complete"
 
-export function useTimer(durationSec: number) {
+export function useTimer(durationSec: number, onComplete?: () => void) {
   const [remaining, setRemaining] = useState(durationSec)
   const [status, setStatus] = useState<TimerStatus>("idle")
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   const clearTick = useCallback(() => {
     if (intervalRef.current) {
@@ -25,6 +27,7 @@ export function useTimer(durationSec: number) {
         if (prev <= 1) {
           clearTick()
           setStatus("complete")
+          onCompleteRef.current?.()
           return 0
         }
         return prev - 1
